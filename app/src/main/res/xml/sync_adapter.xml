@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Binds our account type to the system Contacts authority.
+     supportsUploading=false + an empty onPerformSync == "local only, never sync out".
+     contentAuthority must be com.android.contacts so the framework associates our
+     RawContacts (written under this account) with this adapter. -->
+<sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
+    android:contentAuthority="com.android.contacts"
+    android:accountType="dev.loonybin.tempcontacts"
+    android:supportsUploading="false"
+    android:userVisible="false"
+    android:allowParallelSyncs="false"
+    android:isAlwaysSyncable="true" />
