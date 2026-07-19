@@ -12,8 +12,11 @@ android {
         applicationId = "dev.loonybin.tempcontacts"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        // Version name (semver) + code are supplied by CI (.github/workflows/release-apk.yml):
+        //   -PappVersion=<computed semver>   -PversionCode=<github.run_number>
+        // Local builds fall back to a dev placeholder.
+        versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
+        versionName = (project.findProperty("appVersion") as String?) ?: "1.0-dev"
     }
 
     buildTypes {

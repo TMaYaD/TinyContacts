@@ -82,6 +82,40 @@ your environment uses an egress allowlist, add `dl.google.com` (and `maven.googl
 allowed domains **before** the first Gradle run, or resolution fails immediately with
 "plugin `com.android.application` … was not found".
 
+## Releasing (CI)
+
+`.github/workflows/release-apk.yml` builds the APK and attaches it to a **GitHub Release** on
+every PR merged into `main` (and via manual `workflow_dispatch`).
+
+- Runs on `ubuntu-latest`, which ships the Android SDK and can reach `dl.google.com`, so
+  `assembleDebug` just works — no SDK setup step needed. Auth uses the runner's automatic
+  `GITHUB_TOKEN` (`contents: write`) — no secrets to configure.
+- Publishes the **debug** APK (debug-keystore signed, so no signing secrets), uploaded as
+  `TempContacts-<version>.apk`. For a signed release artifact, build `outputs/apk/release` with
+  a `signingConfig`.
+- The release is a **pre-release** unless the version is a GA `X.Y.Z`.
+
+### Versioning (semver strategy)
+
+The version follows the strategy from
+[`TMaYaD/Jeeves`](https://github.com/TMaYaD/Jeeves) (`cd-app.yml`), computed from git tags +
+conventional commits:
+
+- **GA build** — HEAD is at a `vX.Y.Z` tag → that version verbatim (a full, non-pre release).
+- **Otherwise** — a `<target>-<stage>.<N>` pre-release, where:
+  - `<target>` is bumped from the last stable `vX.Y.Z` tag by scanning conventional commits
+    since it: `feat!`/`BREAKING CHANGE` → **major**, `feat:` → **minor**, otherwise → **patch**;
+  - `<stage>` is the most recent `-beta`/`-rc` stage tag in HEAD's ancestry, or **alpha** if
+    none;
+  - `<N>` is the commit distance since the stage boundary (`+1` for beta/rc, so the tagged
+    commit is `.1`).
+- If conventional commits push `<target>` past what a stage tag declared, the workflow
+  **auto-retags** HEAD with the bumped `v<target>-<stage>` so future runs stay consistent.
+- `versionCode` is `github.run_number` — globally monotonic, decoupled from the version name.
+
+So a typical merge with no tags yet publishes something like `0.1.0-alpha.7` (a `feat:` merge on
+a `0.0.x` base). Cut a `v1.0.0` tag to ship a GA release.
+
 ## Running the tests
 
 The expiry policy tests are pure JVM logic and run with no Android runtime:
