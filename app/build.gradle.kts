@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    `maven-publish`
 }
 
 android {
@@ -66,4 +67,41 @@ dependencies {
     // See README ("Why not the vestrel00 library everywhere?") for the full rationale.
 
     testImplementation(libs.junit)
+}
+
+// Publishes the built APK to the GitHub Packages Maven registry as a versioned artifact.
+// GitHub Packages has no native "APK" type, so the APK is attached to a Maven publication
+// (temp-contacts-<version>.apk + a generated POM). Driven by .github/workflows/publish-apk.yml
+// on every merged PR.
+publishing {
+    publications {
+        register<MavenPublication>("apk") {
+            groupId = "dev.loonybin.tempcontacts"
+            artifactId = "temp-contacts"
+            // CI passes -PappVersion=1.0.<run_number> so each merge publishes a unique version
+            // (GitHub Packages rejects re-publishing an existing release version). Falls back to
+            // a SNAPSHOT for local runs, which may be overwritten freely.
+            version = (project.findProperty("appVersion") as String?) ?: "${android.defaultConfig.versionName}-SNAPSHOT"
+
+            // Publish the debug APK: it is signed with the debug keystore, so CI needs no signing
+            // secrets. Switch to outputs/apk/release + a signingConfig for a release-signed build.
+            artifact(layout.buildDirectory.file("outputs/apk/debug/app-debug.apk")) {
+                extension = "apk"
+                builtBy("assembleDebug")
+            }
+
+            pom { packaging = "apk" }
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/TMaYaD/TinyContacts")
+            credentials {
+                // Supplied by the Actions runner (github.actor + the automatic GITHUB_TOKEN).
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }

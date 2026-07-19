@@ -82,6 +82,26 @@ your environment uses an egress allowlist, add `dl.google.com` (and `maven.googl
 allowed domains **before** the first Gradle run, or resolution fails immediately with
 "plugin `com.android.application` … was not found".
 
+## Publishing (CI)
+
+`.github/workflows/publish-apk.yml` publishes the APK to the **GitHub Packages Maven registry**
+(`maven.pkg.github.com`) on every PR merged into `main` (and via manual `workflow_dispatch`).
+GitHub Packages has no native APK type, so the APK is attached to a Maven publication
+(`dev.loonybin.tempcontacts:temp-contacts:<version>@apk` + a generated POM), configured by the
+`maven-publish` block in `app/build.gradle.kts`.
+
+- Runs on `ubuntu-latest`, which ships the Android SDK and can reach `dl.google.com`, so
+  `assembleDebug` just works — no SDK setup step needed.
+- Each merge publishes `1.0.<run_number>` (unique + monotonic; GitHub Packages refuses to
+  overwrite an existing release version). Auth uses the runner's automatic `GITHUB_TOKEN`
+  (`packages: write`) — no secrets to configure.
+- Publishes the **debug** APK (debug-keystore signed, so no signing secrets). For a
+  release-signed artifact, point the publication at `outputs/apk/release` and add a
+  `signingConfig`.
+
+Consume it from another Gradle build via the `maven.pkg.github.com/TMaYaD/TinyContacts` repo
+(a GitHub token with `read:packages` is required, since the registry is private to the repo).
+
 ## Running the tests
 
 The expiry policy tests are pure JVM logic and run with no Android runtime:
