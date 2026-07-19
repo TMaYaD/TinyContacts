@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Declares the dedicated, local-only account type. accountType MUST match
+     AccountContract.ACCOUNT_TYPE exactly, or AccountManager will reject the account. -->
+<account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accountType="dev.loonybin.tempcontacts"
+    android:icon="@mipmap/ic_launcher"
+    android:smallIcon="@mipmap/ic_launcher"
+    android:label="@string/account_label" />

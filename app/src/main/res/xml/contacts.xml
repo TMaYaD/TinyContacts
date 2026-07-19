@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Contact display metadata for our account type (referenced from SyncService's
+     android.provider.CONTACTS_STRUCTURE meta-data). Its presence lets the system Contacts
+     app treat this account as an editable source and group its contacts under the account's
+     "Temporary Contacts" label (from authenticator.xml). Standard name/phone mimetypes need
+     no explicit <ContactsDataKind>; only custom mimetypes would. -->
+<ContactsSource xmlns:android="http://schemas.android.com/apk/res/android"
+    android:editContactActivity="">
+</ContactsSource>

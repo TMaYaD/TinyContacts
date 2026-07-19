@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Temp Contacts</string>
+    <string name="account_label">Temporary Contacts</string>
+    <string name="account_name">Temporary</string>
+</resources>
